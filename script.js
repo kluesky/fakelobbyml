@@ -34,9 +34,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.fonts.add(assets.customFont);
             
             console.log('All assets loaded successfully');
+            showNotification('success', 'All resources loaded successfully!', 2000);
         } catch (error) {
             console.error('Error loading assets:', error);
-            alert('Failed to load required resources. Please try again later.');
+            showNotification('error', 'Failed to load required resources. Please try again later.');
         }
     }
 
@@ -52,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!file) return;
 
         if (!file.type.match('image.*')) {
-            alert('Please select an image file');
+            showNotification('error', 'Please select a valid image file (JPEG, PNG)');
             return;
         }
 
@@ -61,6 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadArea.style.display = 'none';
             avatarPreview.style.display = 'block';
             avatarPreview.innerHTML = `<img src="${e.target.result}" alt="Avatar Preview">`;
+            showNotification('success', 'Avatar uploaded successfully!', 2000);
+        };
+        reader.onerror = () => {
+            showNotification('error', 'Failed to read the image file');
         };
         reader.readAsDataURL(file);
     }
@@ -71,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const avatarFile = avatarInput.files[0];
 
         if (!avatarFile) {
-            alert('Please upload an avatar image first');
+            showNotification('warning', 'Please upload an avatar image first');
             return;
         }
 
@@ -132,9 +137,11 @@ document.addEventListener('DOMContentLoaded', function() {
             resultCanvas.style.display = 'block';
             resultActions.style.display = 'flex';
             
+            showNotification('success', 'Lobby generated successfully!', 3000);
+            
         } catch (error) {
             console.error('Error generating image:', error);
-            alert('Error generating image: ' + error.message);
+            showNotification('error', `Generation failed: ${error.message}`);
         } finally {
             showLoading(false);
         }
@@ -142,32 +149,47 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Download image
     function downloadImage() {
-        const link = document.createElement('a');
-        link.download = `ml-lobby-${Date.now()}.png`;
-        link.href = resultCanvas.toDataURL('image/png');
-        link.click();
+        try {
+            const link = document.createElement('a');
+            link.download = `ml-lobby-${Date.now()}.png`;
+            link.href = resultCanvas.toDataURL('image/png');
+            link.click();
+            showNotification('success', 'Image download started!', 2000);
+        } catch (error) {
+            console.error('Download failed:', error);
+            showNotification('error', 'Failed to download image');
+        }
     }
 
     // Share image
     async function shareImage() {
         if (navigator.share) {
             try {
+                showLoading(true);
                 // Convert canvas to blob
-                resultCanvas.toBlob(async (blob) => {
-                    const file = new File([blob], 'ml-lobby.png', { type: 'image/png' });
-                    
-                    await navigator.share({
-                        title: 'My ML Lobby',
-                        text: 'Check out my Mobile Legends lobby!',
-                        files: [file]
-                    });
-                }, 'image/png');
+                const blob = await new Promise(resolve => {
+                    resultCanvas.toBlob(resolve, 'image/png');
+                });
+                
+                const file = new File([blob], 'ml-lobby.png', { type: 'image/png' });
+                
+                await navigator.share({
+                    title: 'My ML Lobby',
+                    text: 'Check out my Mobile Legends lobby!',
+                    files: [file]
+                });
+                
+                showNotification('success', 'Content shared successfully!', 2000);
             } catch (error) {
                 console.error('Error sharing:', error);
-                alert('Sharing failed: ' + error.message);
+                if (error.name !== 'AbortError') {
+                    showNotification('warning', 'Sharing was cancelled');
+                }
+            } finally {
+                showLoading(false);
             }
         } else {
-            alert('Web Share API not supported in your browser. You can download and share manually.');
+            showNotification('info', 'For sharing, please download the image first', 3000);
         }
     }
 
@@ -176,7 +198,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.onload = () => resolve(img);
-            img.onerror = reject;
+            img.onerror = (e) => {
+                console.error('Image load error:', e);
+                reject(new Error('Failed to load the image'));
+            };
             img.src = URL.createObjectURL(file);
         });
     }
@@ -186,7 +211,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const img = new Image();
             img.crossOrigin = 'Anonymous';
             img.onload = () => resolve(img);
-            img.onerror = reject;
+            img.onerror = (e) => {
+                console.error('Image load error:', e);
+                reject(new Error(`Failed to load image from ${url}`));
+            };
             img.src = url;
         });
     }
@@ -200,6 +228,70 @@ document.addEventListener('DOMContentLoaded', function() {
             generateBtn.disabled = false;
         }
     }
+
+    // Enhanced Notification System
+    function showNotification(type, message, duration = 3000) {
+        // Remove any existing notifications first
+        const existingNotif = document.querySelector('.custom-notification');
+        if (existingNotif) existingNotif.remove();
+
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `custom-notification ${type}`;
+        
+        // Notification icon based on type
+        let icon;
+        switch(type) {
+            case 'error':
+                icon = '<i class="fas fa-exclamation-circle"></i>';
+                break;
+            case 'success':
+                icon = '<i class="fas fa-check-circle"></i>';
+                break;
+            case 'warning':
+                icon = '<i class="fas fa-exclamation-triangle"></i>';
+                break;
+            default:
+                icon = '<i class="fas fa-info-circle"></i>';
+        }
+        
+        notification.innerHTML = `
+            <div class="notification-icon">${icon}</div>
+            <div class="notification-content">${message}</div>
+            <div class="notification-close"><i class="fas fa-times"></i></div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Show notification
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+        
+        // Auto-hide after duration
+        if (duration > 0) {
+            setTimeout(() => {
+                hideNotification(notification);
+            }, duration);
+        }
+        
+        // Close button functionality
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            hideNotification(notification);
+        });
+    }
+
+    function hideNotification(notification) {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }
+
+    // Initialize the app with welcome message
+    setTimeout(() => {
+        showNotification('info', 'Welcome to Fake ML Lobby Generator! Upload your avatar to begin', 4000);
+    }, 1000);
 
     // Initialize the app
     init();
