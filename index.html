@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake ML Lobby Generator | Create Mobile Legends Fake Lobby</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-container">
+                <i class="fas fa-gamepad logo-icon"></i>
+                <h1 class="logo-text">FAKE ML LOBBY</h1>
+            </div>
+            <p class="tagline">Create your custom Mobile Legends lobby screenshot</p>
+        </header>
+
+        <main class="generator-container">
+            <div class="controls-panel">
+                <div class="input-group">
+                    <label for="nickname">
+                        <i class="fas fa-user"></i> Nickname
+                    </label>
+                    <input type="text" id="nickname" placeholder="Enter your nickname" value="">
+                </div>
+                
+                <div class="input-group">
+                    <label for="avatar">
+                        <i class="fas fa-image"></i> Avatar
+                    </label>
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <p class="upload-text">Click to upload image</p>
+                        <input type="file" id="avatar" accept="image/*">
+                    </div>
+                    <div class="avatar-preview" id="avatarPreview"></div>
+                </div>
+                
+                <button class="generate-btn" id="generateBtn">
+                    <i class="fas fa-magic"></i> Generate Lobby
+                </button>
+            </div>
+
+            <div class="result-panel">
+                <div class="result-placeholder" id="resultPlaceholder">
+                    <i class="fas fa-mobile-screen result-icon"></i>
+                    <p>Your fake lobby will appear here</p>
+                </div>
+                <canvas id="resultCanvas"></canvas>
+                
+                <div class="result-actions" id="resultActions">
+                    <button class="download-btn" id="downloadBtn">
+                        <i class="fas fa-download"></i> Download Image
+                    </button>
+                    <button class="share-btn" id="shareBtn">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <p>Generating your fake lobby...</p>
+        </div>
+    </div>
+    <footer class="app-footer">
+    <div class="social-promo">
+        <p>Follow us for more cool tools!</p>
+        <div class="social-links">
+            <a href="https://www.tiktok.com/@yourusername" target="_blank" class="social-link tiktok">
+                <i class="fab fa-tiktok"></i> TikTok
+            </a>
+            <a href="https://www.instagram.com/yourusername" target="_blank" class="social-link instagram">
+                <i class="fab fa-instagram"></i> Instagram
+            </a>
+        </div>
+    </div>
+    <p class="copyright">© 2025 Fake ML Lobby Generator. Not affiliated with Moonton.</p>
+</footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
